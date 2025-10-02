@@ -1,48 +1,117 @@
 # Malta Grocery Stores Indexer
 
-A world-class application for indexing and discovering grocery stores across Malta using Google Maps and GPS integration.
+An **open source** application for indexing and discovering grocery stores across Malta using modern web technologies and Azure cloud services. This project welcomes contributions from developers worldwide! 🌍
+
+## 🌟 Open Source Project
+
+This is a community-driven open source project. We encourage:
+- 🤝 **Contributions**: Bug fixes, features, documentation improvements
+- 🔧 **Customization**: Fork and adapt for your own region or use case
+- 📚 **Learning**: Use as a reference for modern full-stack development
+- 🚀 **Deployment**: Multiple deployment options for different needs
+
+## 🌐 Live Application
+
+**Demo Application** (hosted by project maintainers):
+- **Frontend**: https://imohweb.github.io/Malta-Business-Indexer
+- **Backend API**: https://iac-infraengine-backend.azurecontainerapps.io
+- **API Documentation**: https://iac-infraengine-backend.azurecontainerapps.io/docs
+
+> **Note**: The above URLs are for the live demo. When you deploy your own instance, you'll have your own custom URLs based on your Azure resources and GitHub username.
 
 ## 🚀 Features
 
-- **Interactive Map**: Explore Malta's grocery stores with Google Maps integration
+- **Interactive Map**: Explore Malta's grocery stores with OpenStreetMap integration
 - **GPS Location**: Find stores near your current location
 - **Advanced Search**: Filter by name, rating, price level, and distance
-- **Real-time Data**: Integrated with Google Places API for up-to-date information
+- **Real-time Data**: Integrated with OpenStreetMap for up-to-date store information
 - **Mobile Responsive**: Optimized for all devices
 - **Store Details**: Comprehensive information including ratings, addresses, and contact details
+- **CI/CD Pipeline**: Automated deployment with GitHub Actions
+- **Infrastructure as Code**: Complete Azure Bicep templates included
 
 ## 🏗️ Architecture
 
 ### Backend (Python)
-
 - **Framework**: FastAPI for high-performance REST API
 - **Database**: SQLite (development) / PostgreSQL (production)
-- **External APIs**: Google Places API for store discovery
-- **Features**: Auto-refresh, search optimization, Malta geo-bounds filtering
+- **External APIs**: OpenStreetMap for store discovery and mapping
+- **Deployment**: Azure Container Apps with Docker
+- **Features**: Auto-refresh, search optimization, Malta geo-bounds filtering using OpenStreetMap data
 
 ### Frontend (React)
-
 - **Framework**: React 18 with modern hooks
 - **Styling**: Styled Components with responsive design
-- **Maps**: Google Maps JavaScript API
+- **Maps**: OpenStreetMap with Leaflet for free, open-source mapping
+- **Deployment**: GitHub Pages for static hosting
 - **State Management**: Custom hooks with efficient caching
+
+### Cloud Infrastructure
+- **Azure Container Registry**: Docker image storage
+- **Azure Container Apps**: Scalable, serverless backend hosting
+- **GitHub Pages**: Static frontend hosting
+- **GitHub Actions**: Automated CI/CD pipeline
+- **Azure Log Analytics**: Monitoring and logging
+
+## 🚀 Quick Start
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/imohweb/Malta-Business-Indexer.git
+cd Malta-Business-Indexer
+
+# 2. Setup backend
+cd backend
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+# Add any custom configuration to .env file (optional)
+# No API keys needed! Uses OpenStreetMap
+
+# 3. Setup frontend
+cd ../frontend
+npm install
+
+# 4. Run the application
+# Terminal 1 - Backend
+cd backend && python -m uvicorn app.main:app --reload
+
+# Terminal 2 - Frontend  
+cd frontend && npm start
+```
+
+Visit: `http://localhost:3000` 🎉
+
+> **✨ Zero Configuration**: Works out of the box with OpenStreetMap - no API keys required!
+
+## 🚀 Deployment Options
+
+This project supports **flexible deployment configurations**:
+
+### Option A: Use Existing Infrastructure (Recommended for Testing)
+Deploy directly to our existing Azure resources for quick testing and contributions.
+
+### Option B: Create Your Own Infrastructure  
+Deploy your own complete instance using the included Infrastructure as Code templates.
+
+**🔧 Fully Configurable Workflows**: All deployment parameters (resource names, URLs, etc.) are customizable through GitHub Actions inputs. No hardcoded values!
+
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment instructions and [WORKFLOW_CONFIGURATION.md](docs/WORKFLOW_CONFIGURATION.md) for workflow customization options.
 
 ## 📋 Prerequisites
 
 - **Python 3.8+**
 - **Node.js 16+**
-- **Google Maps API Key** with the following APIs enabled:
-  - Maps JavaScript API
-  - Places API
-  - Geocoding API
 
-## 🛠️ Installation
+> **Note**: This project uses OpenStreetMap for both map visualization and store data discovery, which doesn't require any API keys. Everything works out of the box!
+
+## 🛠️ Local Development Setup
 
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
-cd MT-grocery-stores-indexer
+git clone https://github.com/imohweb/Malta-Business-Indexer.git
+cd Malta-Business-Indexer
 ```
 
 ### 2. Backend Setup
@@ -62,11 +131,11 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Create environment file
+# Create environment file (optional for custom configuration)
 cp .env.example .env
 
-# Edit .env with your Google Maps API key
-# GOOGLE_MAPS_API_KEY=your_api_key_here
+# For local development, no API keys required!
+# The app uses OpenStreetMap which is free and open source
 ```
 
 ### 3. Frontend Setup
@@ -77,25 +146,12 @@ cd frontend
 # Install dependencies
 npm install
 
-# Create environment file
+# Create environment file (optional for local development)
 cp .env.example .env
 
-# Edit .env with your configuration
-# REACT_APP_GOOGLE_MAPS_API_KEY=your_api_key_here
+# For local development, the app will use OpenStreetMap by default
+# No additional API keys required for mapping or store discovery
 ```
-
-### 4. Get Google Maps API Key
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable the following APIs:
-   - Maps JavaScript API
-   - Places API
-   - Geocoding API (optional)
-4. Create credentials (API Key)
-5. Restrict the API key (recommended):
-   - For backend: Restrict to server IP
-   - For frontend: Restrict to your domain
 
 ## 🚀 Running the Application
 
@@ -149,21 +205,27 @@ The application will be available at `http://localhost:3000`
 ### Backend (.env)
 
 ```env
-GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+# Optional configuration - defaults work fine for most cases
 DATABASE_URL=sqlite:///./grocery_stores.db
 DEBUG=True
-CORS_ORIGINS=http://localhost:3000,http://localhost:8080
+CORS_ORIGINS=http://localhost:3000,https://yourusername.github.io
+
+# Maps service configuration (already set to OpenStreetMap)
+MAPS_SERVICE=openstreetmap
 ```
 
 ### Frontend (.env)
 
+For local development, create a `.env` file (optional):
+
 ```env
 REACT_APP_API_URL=http://localhost:8000
-REACT_APP_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
 REACT_APP_MALTA_CENTER_LAT=35.8989
 REACT_APP_MALTA_CENTER_LNG=14.5146
 REACT_APP_DEFAULT_ZOOM=12
 ```
+
+> **Note**: The frontend automatically detects the environment and uses appropriate API URLs. For GitHub Pages deployment, it uses the production backend at `https://iac-infraengine-backend.azurecontainerapps.io`.
 
 ## 🧪 Testing
 
@@ -181,42 +243,71 @@ cd frontend
 npm test
 ```
 
-## 🌐 Deployment
+## 🌐 Production Deployment
 
-### Backend Deployment
+This project uses **GitHub Actions** for manual CI/CD deployment:
 
-1. **Environment Setup**:
+### Manual Deployment Workflow
 
-   - Set `DEBUG=False`
-   - Use PostgreSQL for production: `DATABASE_URL=postgresql://user:pass@localhost/dbname`
-   - Set proper CORS origins
+1. **Code Ready**: Ensure all changes are tested and ready
+2. **Manual Trigger**: Go to GitHub Actions tab and click "Run workflow"
+3. **Backend Deployment**: 
+   - Builds Docker image
+   - Pushes to Azure Container Registry
+   - Updates Azure Container Apps
+4. **Frontend Deployment**:
+   - Builds React application
+   - Deploys to GitHub Pages
 
-2. **Docker Deployment**:
+> **Manual Control**: All deployments are manual to ensure quality and control over when updates go live.
 
-   ```bash
-   cd backend
-   docker build -t malta-grocery-api .
-   docker run -p 8000:8000 malta-grocery-api
-   ```
+### Manual Deployment Options
 
-3. **Cloud Platforms** (Heroku, DigitalOcean, AWS, etc.):
-   - Install dependencies from `requirements.txt`
-   - Set environment variables
-   - Run with Gunicorn: `gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker`
+#### Backend (Azure Container Apps)
 
-### Frontend Deployment
+```bash
+cd backend
 
-1. **Build for Production**:
+# Build Docker image
+docker build -t malta-grocery-api .
 
-   ```bash
-   cd frontend
-   npm run build
-   ```
+# Tag for Azure Container Registry
+docker tag malta-grocery-api yourregistry.azurecr.io/malta-grocery-api:latest
 
-2. **Deploy to Static Hosting**:
-   - Upload `build/` folder to Netlify, Vercel, or GitHub Pages
-   - Configure environment variables
-   - Set up custom domain (optional)
+# Push to registry (requires authentication)
+docker push yourregistry.azurecr.io/malta-grocery-api:latest
+```
+
+#### Frontend (GitHub Pages)
+
+```bash
+cd frontend
+
+# Build for production
+npm run build
+
+# Deploy to GitHub Pages (using gh-pages package)
+npm run deploy
+```
+
+### Setting Up Your Own Deployment
+
+For detailed instructions on setting up your own deployment infrastructure, see [DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+### Environment Variables for Production
+
+**Environment Variables for Production
+
+**Backend**:
+- `DATABASE_URL`: Production database connection string
+- `DEBUG=False`: Disable debug mode
+- `CORS_ORIGINS`: Your frontend domain (e.g., `https://yourusername.github.io`)
+- `MAPS_SERVICE=openstreetmap`: Ensure OpenStreetMap is used
+
+**GitHub Secrets Required**:
+- `AZURE_CREDENTIALS`: Azure service principal credentials
+- `REGISTRY_USERNAME`: Azure Container Registry username (e.g., `yourregistry`)
+- `REGISTRY_PASSWORD`: Azure Container Registry password
 
 ## 🔍 Usage Guide
 
@@ -231,17 +322,16 @@ npm test
 
 - Click any marker for basic details
 - Click "View on Map" in store list for detailed view
-- Click "Directions" to open Google Maps navigation
+- Click "Directions" to open external mapping service for navigation
 
 ### Data Refresh
 
-- Stores are automatically updated from Google Places API
+- Stores are automatically updated from OpenStreetMap data
 - Manual refresh available via API endpoint
-- Data includes ratings, hours, contact info, and location
+- Data includes ratings, hours, contact info, and location from community-sourced OpenStreetMap
 
 ## 🛡️ Security Considerations
 
-- API key restrictions (domain/IP based)
 - Input validation and sanitization
 - CORS configuration for production
 - Rate limiting for API endpoints (recommended)
@@ -256,11 +346,54 @@ npm test
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+We welcome contributions from developers of all skill levels! Here are several ways to contribute:
+
+### 🛠️ Development Contributions
+- **Bug Fixes**: Help us identify and fix issues
+- **Feature Development**: Add new functionality
+- **Code Optimization**: Improve performance and code quality
+- **Testing**: Write unit tests and integration tests
+
+### 📚 Documentation
+- **API Documentation**: Improve endpoint documentation
+- **Setup Guides**: Enhance installation and deployment guides
+- **Tutorials**: Create user guides and tutorials
+- **Code Comments**: Add helpful code documentation
+
+### 🌍 Localization & Adaptation
+- **Regional Adaptation**: Adapt for other countries/regions
+- **Language Support**: Add multi-language support
+- **Local Data Sources**: Integrate regional business directories
+
+### 🚀 Infrastructure & DevOps
+- **CI/CD Improvements**: Enhance the deployment pipeline
+- **Monitoring**: Add application monitoring and alerts
+- **Performance**: Optimize database queries and API responses
+- **Security**: Improve security measures and practices
+
+### How to Contribute
+
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
+3. **Make** your changes with clear, descriptive commits
+4. **Test** your changes locally
+5. **Push** to your branch: `git push origin feature/amazing-feature`
+6. **Create** a Pull Request with a clear description
+
+### Development Guidelines
+
+- Follow existing code style and conventions
+- Add tests for new features
+- Update documentation as needed
+- Ensure all GitHub Actions workflows pass
+- Be respectful and collaborative in discussions
+
+### Getting Help
+
+- 📖 Check the [DEPLOYMENT.md](docs/DEPLOYMENT.md) for setup guidance
+- 🐛 Open an issue for bugs or feature requests
+- 💬 Join discussions in pull requests and issues
+- 📧 Reach out to maintainers for guidance
 
 ## 📄 License
 
@@ -272,12 +405,23 @@ For issues and questions:
 
 1. Check the API documentation at `/docs`
 2. Review console logs for error details
-3. Ensure API keys are properly configured
-4. Verify network connectivity for API calls
+3. Ensure network connectivity for OpenStreetMap API calls
 
 ## 🙏 Acknowledgments
 
-- Google Maps Platform for location services
-- FastAPI framework for the robust backend
-- React community for excellent tooling
-- Malta's local businesses for the data
+- **OpenStreetMap** for providing free, open-source mapping data and services
+- **OpenStreetMap Community** for maintaining comprehensive business location data
+- **FastAPI** framework for the robust and performant backend
+- **React** community for excellent tooling and ecosystem
+- **Azure** for reliable cloud infrastructure services
+- **GitHub** for hosting, actions, and collaborative development tools
+- **Malta's local businesses** for being part of this directory
+- **Open source community** for inspiration and continuous improvement
+
+## 🌟 Star the Project
+
+If you find this project useful, please consider giving it a star ⭐ on GitHub! It helps others discover the project and motivates continued development.
+
+---
+
+**Built with ❤️ by the open source community for Malta and beyond** 🇲🇹

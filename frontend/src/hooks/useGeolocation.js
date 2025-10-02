@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-import googleMapsService from '../services/googleMaps';
+import { useState, useCallback } from 'react';
 
 export const useGeolocation = () => {
   const [location, setLocation] = useState(null);
@@ -9,8 +8,45 @@ export const useGeolocation = () => {
   const getCurrentLocation = useCallback(async () => {
     setLoading(true);
     setError(null);
+    
     try {
-      const position = await googleMapsService.getCurrentLocation();
+      if (!navigator.geolocation) {
+        throw new Error('Geolocation is not supported by this browser');
+      }
+
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            resolve({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+              accuracy: position.coords.accuracy
+            });
+          },
+          (error) => {
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                reject(new Error('Location access denied by user'));
+                break;
+              case error.POSITION_UNAVAILABLE:
+                reject(new Error('Location information unavailable'));
+                break;
+              case error.TIMEOUT:
+                reject(new Error('Location request timed out'));
+                break;
+              default:
+                reject(new Error('Unknown geolocation error'));
+                break;
+            }
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000 // 5 minutes
+          }
+        );
+      });
+
       setLocation(position);
     } catch (err) {
       setError(err.message);
@@ -31,65 +67,5 @@ export const useGeolocation = () => {
     error,
     getCurrentLocation,
     clearLocation
-  };
-};
-
-export const useGoogleMaps = (containerId) => {
-  const [map, setMap] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const initializeMap = async () => {
-      try {
-        const container = document.getElementById(containerId);
-        if (!container) {
-          throw new Error(`Container with id "${containerId}" not found`);
-        }
-
-        const mapInstance = await googleMapsService.initializeMap(container);
-        setMap(mapInstance);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (containerId) {
-      initializeMap();
-    }
-
-    return () => {
-      googleMapsService.destroy();
-    };
-  }, [containerId]);
-
-  const addStoreMarkers = useCallback((stores, onMarkerClick) => {
-    if (!map) return;
-
-    googleMapsService.clearMarkers();
-    stores.forEach(store => {
-      googleMapsService.createStoreMarker(store, onMarkerClick);
-    });
-  }, [map]);
-
-  const addUserLocationMarker = useCallback((latitude, longitude) => {
-    if (!map) return;
-    return googleMapsService.addUserLocationMarker(latitude, longitude);
-  }, [map]);
-
-  const fitMarkersInView = useCallback((stores) => {
-    if (!map || !stores.length) return;
-    googleMapsService.fitMarkersInView(stores);
-  }, [map]);
-
-  return {
-    map,
-    loading,
-    error,
-    addStoreMarkers,
-    addUserLocationMarker,
-    fitMarkersInView
   };
 };

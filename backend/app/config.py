@@ -13,11 +13,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./grocery_stores.db"
     
     # Maps Service Configuration
-    # Choose: "openstreetmap", "google", or "mock"
+    # Using OpenStreetMap (free and open source)
     maps_service: str = "openstreetmap"
-    
-    # Google Maps API (Optional - only needed if maps_service = "google")
-    google_maps_api_key: str = ""
     
     # OpenStreetMap Configuration
     use_openstreetmap: bool = True

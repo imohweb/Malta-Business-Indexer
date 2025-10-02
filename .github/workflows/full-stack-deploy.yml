@@ -1,0 +1,96 @@
+name: Full Stack Deployment
+
+on:
+    workflow_dispatch:
+        inputs:
+            deploy_backend:
+                description: "Deploy Backend"
+                type: boolean
+                default: true
+            deploy_frontend:
+                description: "Deploy Frontend"
+                type: boolean
+                default: true
+            azure_resource_group:
+                description: "Azure Resource Group"
+                required: false
+                default: "iac-infraengine-rg"
+            container_registry_name:
+                description: "Container Registry Name"
+                required: false
+                default: "iacstudioregistry"
+            container_app_name:
+                description: "Container App Name"
+                required: false
+                default: "iac-infraengine-backend"
+            frontend_url:
+                description: "Frontend URL"
+                required: false
+                default: "https://imohweb.github.io/Malta-Business-Indexer"
+
+env:
+    AZURE_RESOURCE_GROUP: ${{ github.event.inputs.azure_resource_group || 'iac-infraengine-rg' }}
+    CONTAINER_REGISTRY_NAME: ${{ github.event.inputs.container_registry_name || 'iacstudioregistry' }}
+
+jobs:
+    # Trigger backend deployment if needed
+    backend-deployment:
+        name: Backend Deployment
+        if: github.event.inputs.deploy_backend != 'false'
+        uses: ./.github/workflows/backend-deploy.yml
+        with:
+            azure_resource_group: ${{ github.event.inputs.azure_resource_group || 'iac-infraengine-rg' }}
+            container_registry_name: ${{ github.event.inputs.container_registry_name || 'iacstudioregistry' }}
+            container_app_name: ${{ github.event.inputs.container_app_name || 'iac-infraengine-backend' }}
+            image_name: "malta-business-indexer-backend"
+        secrets: inherit
+
+    # Trigger frontend deployment after backend is ready
+    frontend-deployment:
+        name: Frontend Deployment
+        needs: backend-deployment
+        if: always() && (github.event.inputs.deploy_frontend != 'false')
+        uses: ./.github/workflows/frontend-deploy.yml
+        with:
+            backend_url: ${{ needs.backend-deployment.outputs.backend-url || 'https://iac-infraengine-backend.azurecontainerapps.io' }}
+            frontend_url: ${{ github.event.inputs.frontend_url || 'https://imohweb.github.io/Malta-Business-Indexer' }}
+        secrets: inherit
+
+    # Final validation
+    integration-test:
+        name: Integration Tests
+        runs-on: ubuntu-latest
+        needs: [backend-deployment, frontend-deployment]
+        if: success() && github.event_name == 'workflow_dispatch'
+        steps:
+            - name: Wait for all deployments
+              run: sleep 60
+
+            - name: Test Backend-Frontend Integration
+              run: |
+                  BACKEND_URL="${{ needs.backend-deployment.outputs.backend-url || 'https://iac-infraengine-backend.azurecontainerapps.io' }}"
+                  FRONTEND_URL="${{ github.event.inputs.frontend_url || 'https://imohweb.github.io/Malta-Business-Indexer' }}"
+
+                  echo "Testing backend API..."
+                  curl -f "$BACKEND_URL/health" || exit 1
+
+                  echo "Testing frontend accessibility..."
+                  curl -f "$FRONTEND_URL" || exit 1
+
+                  echo "🎉 Integration tests passed!"
+
+    notify-completion:
+        name: Deployment Complete
+        runs-on: ubuntu-latest
+        needs: [integration-test]
+        if: success()
+        steps:
+            - name: Success Notification
+              run: |
+                  echo "🚀 Full stack deployment completed successfully!"
+                  echo ""
+                  echo "🌐 Frontend: ${{ github.event.inputs.frontend_url || 'https://imohweb.github.io/Malta-Business-Indexer' }}"
+                  echo "🔗 Backend: ${{ needs.backend-deployment.outputs.backend-url || 'https://iac-infraengine-backend.azurecontainerapps.io' }}"
+                  echo "📦 Resource Group: ${{ env.AZURE_RESOURCE_GROUP }}"
+                  echo ""
+                  echo "The Malta Business Indexer is now live! 🎉"
