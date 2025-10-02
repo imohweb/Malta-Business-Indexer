@@ -12,16 +12,19 @@ This is a community-driven open source project. We encourage:
 
 ## 🌐 Live Application
 
+**Demo Application** (hosted by project maintainers):
 - **Frontend**: https://imohweb.github.io/Malta-Business-Indexer
 - **Backend API**: https://iac-infraengine-backend.azurecontainerapps.io
 - **API Documentation**: https://iac-infraengine-backend.azurecontainerapps.io/docs
+
+> **Note**: The above URLs are for the live demo. When you deploy your own instance, you'll have your own custom URLs based on your Azure resources and GitHub username.
 
 ## 🚀 Features
 
 - **Interactive Map**: Explore Malta's grocery stores with OpenStreetMap integration
 - **GPS Location**: Find stores near your current location
 - **Advanced Search**: Filter by name, rating, price level, and distance
-- **Real-time Data**: Integrated with Google Places API for up-to-date information
+- **Real-time Data**: Integrated with OpenStreetMap for up-to-date store information
 - **Mobile Responsive**: Optimized for all devices
 - **Store Details**: Comprehensive information including ratings, addresses, and contact details
 - **CI/CD Pipeline**: Automated deployment with GitHub Actions
@@ -32,9 +35,9 @@ This is a community-driven open source project. We encourage:
 ### Backend (Python)
 - **Framework**: FastAPI for high-performance REST API
 - **Database**: SQLite (development) / PostgreSQL (production)
-- **External APIs**: Google Places API for store discovery
+- **External APIs**: OpenStreetMap for store discovery and mapping
 - **Deployment**: Azure Container Apps with Docker
-- **Features**: Auto-refresh, search optimization, Malta geo-bounds filtering
+- **Features**: Auto-refresh, search optimization, Malta geo-bounds filtering using OpenStreetMap data
 
 ### Frontend (React)
 - **Framework**: React 18 with modern hooks
@@ -62,7 +65,8 @@ cd backend
 python -m venv venv
 venv\Scripts\activate  # Windows
 pip install -r requirements.txt
-# Add GOOGLE_PLACES_API_KEY to .env file
+# Add any custom configuration to .env file (optional)
+# No API keys needed! Uses OpenStreetMap
 
 # 3. Setup frontend
 cd ../frontend
@@ -78,27 +82,28 @@ cd frontend && npm start
 
 Visit: `http://localhost:3000` 🎉
 
+> **✨ Zero Configuration**: Works out of the box with OpenStreetMap - no API keys required!
+
 ## 🚀 Deployment Options
 
-This project supports two deployment approaches:
+This project supports **flexible deployment configurations**:
 
 ### Option A: Use Existing Infrastructure (Recommended for Testing)
 Deploy directly to our existing Azure resources for quick testing and contributions.
 
-### Option B: Create Your Own Infrastructure
+### Option B: Create Your Own Infrastructure  
 Deploy your own complete instance using the included Infrastructure as Code templates.
 
-See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed instructions on both approaches.
+**🔧 Fully Configurable Workflows**: All deployment parameters (resource names, URLs, etc.) are customizable through GitHub Actions inputs. No hardcoded values!
+
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment instructions and [WORKFLOW_CONFIGURATION.md](docs/WORKFLOW_CONFIGURATION.md) for workflow customization options.
 
 ## 📋 Prerequisites
 
 - **Python 3.8+**
 - **Node.js 16+**
-- **Google Places API Key** with the following APIs enabled:
-  - Places API (for store discovery)
-  - Geocoding API (optional, for address lookup)
 
-> **Note**: This project uses OpenStreetMap for map visualization, which doesn't require an API key. Only Google Places API is needed for store data discovery.
+> **Note**: This project uses OpenStreetMap for both map visualization and store data discovery, which doesn't require any API keys. Everything works out of the box!
 
 ## 🛠️ Local Development Setup
 
@@ -126,11 +131,11 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Create environment file
+# Create environment file (optional for custom configuration)
 cp .env.example .env
 
-# Edit .env with your Google Places API key
-# GOOGLE_PLACES_API_KEY=your_api_key_here
+# For local development, no API keys required!
+# The app uses OpenStreetMap which is free and open source
 ```
 
 ### 3. Frontend Setup
@@ -145,16 +150,8 @@ npm install
 cp .env.example .env
 
 # For local development, the app will use OpenStreetMap by default
-# No additional API keys required for mapping
+# No additional API keys required for mapping or store discovery
 ```
-
-### 4. Get Google Places API Key (Backend Only)
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable the **Places API** (and optionally Geocoding API)
-4. Create credentials (API Key)
-5. Restrict the API key to your server IP (recommended for production)
 
 ## 🚀 Running the Application
 
@@ -208,10 +205,13 @@ The application will be available at `http://localhost:3000`
 ### Backend (.env)
 
 ```env
-GOOGLE_PLACES_API_KEY=your_google_places_api_key_here
+# Optional configuration - defaults work fine for most cases
 DATABASE_URL=sqlite:///./grocery_stores.db
 DEBUG=True
-CORS_ORIGINS=http://localhost:3000,https://imohweb.github.io
+CORS_ORIGINS=http://localhost:3000,https://yourusername.github.io
+
+# Maps service configuration (already set to OpenStreetMap)
+MAPS_SERVICE=openstreetmap
 ```
 
 ### Frontend (.env)
@@ -245,18 +245,21 @@ npm test
 
 ## 🌐 Production Deployment
 
-This project uses **GitHub Actions** for automated CI/CD deployment:
+This project uses **GitHub Actions** for manual CI/CD deployment:
 
-### Automated Deployment Workflow
+### Manual Deployment Workflow
 
-1. **Code Push**: Push changes to the `main` branch
-2. **Backend Deployment**: 
+1. **Code Ready**: Ensure all changes are tested and ready
+2. **Manual Trigger**: Go to GitHub Actions tab and click "Run workflow"
+3. **Backend Deployment**: 
    - Builds Docker image
    - Pushes to Azure Container Registry
    - Updates Azure Container Apps
-3. **Frontend Deployment**:
+4. **Frontend Deployment**:
    - Builds React application
    - Deploys to GitHub Pages
+
+> **Manual Control**: All deployments are manual to ensure quality and control over when updates go live.
 
 ### Manual Deployment Options
 
@@ -269,10 +272,10 @@ cd backend
 docker build -t malta-grocery-api .
 
 # Tag for Azure Container Registry
-docker tag malta-grocery-api iacstudioregistry.azurecr.io/malta-grocery-api:latest
+docker tag malta-grocery-api yourregistry.azurecr.io/malta-grocery-api:latest
 
 # Push to registry (requires authentication)
-docker push iacstudioregistry.azurecr.io/malta-grocery-api:latest
+docker push yourregistry.azurecr.io/malta-grocery-api:latest
 ```
 
 #### Frontend (GitHub Pages)
@@ -293,15 +296,17 @@ For detailed instructions on setting up your own deployment infrastructure, see 
 
 ### Environment Variables for Production
 
+**Environment Variables for Production
+
 **Backend**:
-- `GOOGLE_PLACES_API_KEY`: Your Google Places API key
 - `DATABASE_URL`: Production database connection string
 - `DEBUG=False`: Disable debug mode
-- `CORS_ORIGINS`: Your frontend domain
+- `CORS_ORIGINS`: Your frontend domain (e.g., `https://yourusername.github.io`)
+- `MAPS_SERVICE=openstreetmap`: Ensure OpenStreetMap is used
 
 **GitHub Secrets Required**:
 - `AZURE_CREDENTIALS`: Azure service principal credentials
-- `REGISTRY_USERNAME`: Azure Container Registry username
+- `REGISTRY_USERNAME`: Azure Container Registry username (e.g., `yourregistry`)
 - `REGISTRY_PASSWORD`: Azure Container Registry password
 
 ## 🔍 Usage Guide
@@ -317,17 +322,16 @@ For detailed instructions on setting up your own deployment infrastructure, see 
 
 - Click any marker for basic details
 - Click "View on Map" in store list for detailed view
-- Click "Directions" to open Google Maps navigation
+- Click "Directions" to open external mapping service for navigation
 
 ### Data Refresh
 
-- Stores are automatically updated from Google Places API
+- Stores are automatically updated from OpenStreetMap data
 - Manual refresh available via API endpoint
-- Data includes ratings, hours, contact info, and location
+- Data includes ratings, hours, contact info, and location from community-sourced OpenStreetMap
 
 ## 🛡️ Security Considerations
 
-- API key restrictions (domain/IP based)
 - Input validation and sanitization
 - CORS configuration for production
 - Rate limiting for API endpoints (recommended)
@@ -401,13 +405,12 @@ For issues and questions:
 
 1. Check the API documentation at `/docs`
 2. Review console logs for error details
-3. Ensure API keys are properly configured
-4. Verify network connectivity for API calls
+3. Ensure network connectivity for OpenStreetMap API calls
 
 ## 🙏 Acknowledgments
 
 - **OpenStreetMap** for providing free, open-source mapping data and services
-- **Google Places Platform** for comprehensive business location data
+- **OpenStreetMap Community** for maintaining comprehensive business location data
 - **FastAPI** framework for the robust and performant backend
 - **React** community for excellent tooling and ecosystem
 - **Azure** for reliable cloud infrastructure services

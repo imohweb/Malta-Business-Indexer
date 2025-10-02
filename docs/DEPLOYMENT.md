@@ -6,9 +6,31 @@ This guide will help you set up the complete CI/CD pipeline for the Malta Busine
 
 This open source project supports two deployment approaches:
 
-### Option A: Use Existing Azure Resources (Current Production Setup)
-- Uses existing Azure Container Registry: `iacstudioregistry`
-- Uses existing Container App: `iac-infraengine-backend`
+## 🔧 Workflow Configuration
+
+The GitHub Actions workflows are **fully configurable** to support different Azure resources and deployment targets. See [WORKFLOW_CONFIGURATION.md](WORKFLOW_CONFIGURATION.md) for detailed customization options.
+
+**Key configurable parameters:**
+- Azure Resource Group name
+- Container Registry name  
+- Container App name
+- Frontend and Backend URLs
+- Docker image names
+
+You can customize these through:
+- Manual workflow triggers with custom inputs
+- Editing default values in workflow files
+- Using different resource names in your fork
+
+### Quick Configuration for Your Own Resources
+
+1. **Manual Deployment**: Use GitHub Actions tab with custom parameters
+2. **Fork Customization**: Edit default values in `.github/workflows/` files
+3. **Environment Variables**: Set repository secrets for authentication
+
+## Option A: Deploy to Existing Infrastructure
+- Uses existing Azure Container Registry: `<your-registry-name>`
+- Uses existing Container App: `<your-container-app-name>`
 - Minimal setup required, just configure GitHub secrets
 - Perfect for contributing to the main project
 
@@ -34,9 +56,9 @@ If you're contributing to the main project or want a quick setup:
 3. **Push to master branch** to trigger deployment
 
 The workflows are already configured to use:
-- Container Registry: `iacstudioregistry`
-- Container App: `iac-infraengine-backend`
-- Resource Group: `iac-infraengine-rg`
+- Container Registry: `<existing-registry-name>`
+- Container App: `<existing-container-app-name>`
+- Resource Group: `<existing-resource-group-name>`
 
 ### 🏗️ Option B: Full Infrastructure Deployment
 
@@ -66,7 +88,7 @@ az account set --subscription "your-subscription-id"
 
 # Create service principal for GitHub Actions
 az ad sp create-for-rbac \
-  --name "your-project-name-sp" \
+  --name "malta-indexer-github-sp" \
   --role contributor \
   --scopes /subscriptions/your-subscription-id \
   --sdk-auth
@@ -78,7 +100,7 @@ Save the output JSON - you'll need it for GitHub secrets.
 
 ```bash
 # Create resource group (update the name to match your configuration)
-az group create --name your-resource-group-name --location "East US"
+az group create --name malta-indexer-rg --location "East US"
 ```
 
 ### 1.3 Create Azure Container Registry (Option B only)
@@ -86,13 +108,13 @@ az group create --name your-resource-group-name --location "East US"
 ```bash
 # Create Container Registry (update the name to match your configuration)
 az acr create \
-  --resource-group your-resource-group-name \
-  --name yourregistryname \
+  --resource-group malta-indexer-rg \
+  --name maltaindexeracr \
   --sku Basic \
   --admin-enabled true
 
 # Get registry credentials
-az acr credential show --name yourregistryname
+az acr credential show --name maltaindexeracr
 ```
 
 ## Step 2: GitHub Repository Setup
@@ -123,12 +145,12 @@ Go to Repository Settings > Secrets and variables > Actions, and add these secre
    (Use the output from service principal creation)
 
 2. **REGISTRY_USERNAME**
-   - For Option A: `iacstudioregistry`
-   - For Option B: `yourregistryname`
+   - For Option A: `<existing-registry-name>`
+   - For Option B: `maltaindexeracr`
 
 3. **REGISTRY_PASSWORD**
    - For Option A: Contact project maintainer for credentials
-   - For Option B: Get from `az acr credential show --name yourregistryname`
+   - For Option B: Get from `az acr credential show --name maltaindexeracr`
 
 ## Step 3: Initial Infrastructure Deployment (Option B Only)
 
@@ -138,7 +160,7 @@ If you chose Option B, deploy the infrastructure manually once before the CI/CD 
 # Update the parameters in infra/main.bicepparam first
 # Deploy infrastructure
 az deployment group create \
-  --resource-group your-resource-group-name \
+  --resource-group malta-indexer-rg \
   --template-file infra/main.bicep \
   --parameters infra/main.bicepparam
 ```
@@ -169,18 +191,28 @@ The repository includes three GitHub Actions workflows:
 ### Backend Environment Variables (set automatically in workflows)
 - `PORT=5000`
 - `ENVIRONMENT=production`
+- `MAPS_SERVICE=openstreetmap`
+- `DEBUG=False`
 
 ### Frontend Environment Variables (set in workflows)
 - `REACT_APP_ENVIRONMENT=github-pages`
-- `REACT_APP_BACKEND_URL=https://malta-biz-dev-backend.azurecontainerapps.io`
+- `REACT_APP_BACKEND_URL=https://<your-backend-url>.azurecontainerapps.io`
 - `REACT_APP_MAPS_SERVICE=openstreetmap`
 
-## Step 6: Testing the Pipeline
+> **Note**: No API keys are required as the application uses OpenStreetMap for all mapping and store discovery functionality.
+
+## Step 6: Manual Deployment
+
+All deployments are manual to ensure control and verification before going live.
 
 ### 6.1 Trigger Deployment
 
-1. **Automatic**: Push changes to the `master` branch
-2. **Manual**: Go to Actions tab > Run workflow
+**Manual Only**: Go to GitHub Actions tab and click "Run workflow"
+
+Available workflows:
+- **Full Stack Deployment**: Deploys both backend and frontend together
+- **Deploy Backend to Azure Container Apps**: Backend only
+- **Deploy Frontend to GitHub Pages**: Frontend only
 
 ### 6.2 Monitor Deployment
 
@@ -190,9 +222,9 @@ The repository includes three GitHub Actions workflows:
 
 ### 6.3 Access Your Application
 
-- **Frontend**: https://imohweb.github.io/Malta-Business-Indexer
-- **Backend**: https://malta-biz-dev-backend.azurecontainerapps.io
-- **API Health**: https://malta-biz-dev-backend.azurecontainerapps.io/health
+- **Frontend**: https://yourusername.github.io/Malta-Business-Indexer
+- **Backend**: https://your-backend-app.azurecontainerapps.io
+- **API Health**: https://your-backend-app.azurecontainerapps.io/health
 
 ## Troubleshooting
 
@@ -220,16 +252,16 @@ The repository includes three GitHub Actions workflows:
 
 ```bash
 # Check Container App status
-az containerapp show --name malta-biz-dev-backend --resource-group malta-business-indexer-rg
+az containerapp show --name your-backend-app --resource-group malta-indexer-rg
 
 # View Container App logs
-az containerapp logs show --name malta-biz-dev-backend --resource-group malta-business-indexer-rg
+az containerapp logs show --name your-backend-app --resource-group malta-indexer-rg
 
 # Check ACR repositories
-az acr repository list --name maltabizdevacr
+az acr repository list --name maltaindexeracr
 
 # Test backend health
-curl https://malta-biz-dev-backend.azurecontainerapps.io/health
+curl https://your-backend-app.azurecontainerapps.io/health
 ```
 
 ## Security Considerations

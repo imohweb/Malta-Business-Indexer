@@ -27,10 +27,7 @@ const getApiBaseUrl = () => {
 export const API_BASE_URL = getApiBaseUrl();
 
 // Maps Service Configuration
-export const MAPS_SERVICE = process.env.REACT_APP_MAPS_SERVICE || 'openstreetmap'; // 'openstreetmap', 'google', or 'mock'
-
-// Google Maps Configuration (Optional - only if using Google Maps)
-export const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
+export const MAPS_SERVICE = 'openstreetmap'; // Using OpenStreetMap exclusively
 
 // Malta Configuration
 export const MALTA_CENTER = {
