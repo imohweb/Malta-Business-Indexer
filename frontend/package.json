@@ -2,6 +2,7 @@
   "name": "malta-grocery-indexer-frontend",
   "version": "1.0.0",
   "description": "Malta Grocery Stores Indexer - React Frontend",
+  "homepage": "https://imohweb.github.io/Malta-Business-Indexer",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
@@ -21,7 +22,9 @@
     "start": "set PORT=3004 && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -43,7 +46,7 @@
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.20",
+    "gh-pages": "^6.1.0",
     "prettier": "^3.1.0"
-  },
-  "proxy": "http://localhost:5000"
+  }
 }

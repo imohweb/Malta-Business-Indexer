@@ -1,5 +1,30 @@
+// Environment Detection
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
+const isGitHubPages = process.env.REACT_APP_ENVIRONMENT === 'github-pages';
+
 // API Configuration
-export const API_BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'development' ? '' : 'http://localhost:5000');
+const getApiBaseUrl = () => {
+  // Check for explicit environment variable first
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Environment-specific defaults
+  if (isDevelopment) {
+    return ''; // Use proxy in package.json for development
+  }
+  
+  if (isGitHubPages) {
+    // For GitHub Pages, will be set via environment variable in CI/CD
+    return process.env.REACT_APP_BACKEND_URL || 'https://iac-infraengine-backend.azurecontainerapps.io';
+  }
+  
+  // Default fallback
+  return 'http://localhost:5000';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 // Maps Service Configuration
 export const MAPS_SERVICE = process.env.REACT_APP_MAPS_SERVICE || 'openstreetmap'; // 'openstreetmap', 'google', or 'mock'
@@ -53,3 +78,13 @@ export const STORE_TYPES = {
 // Rating Configuration
 export const MAX_RATING = 5;
 export const MIN_RATING = 0;
+
+// Development/Debug Configuration
+export const DEBUG_MODE = isDevelopment && process.env.REACT_APP_DEBUG === 'true';
+
+// Export environment flags for use elsewhere
+export const ENVIRONMENT = {
+  isDevelopment,
+  isProduction,
+  isGitHubPages
+};
